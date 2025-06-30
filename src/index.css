@@ -1,96 +1,86 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Professional Expense Tracker Design System */
+/* Inspired by 21st.dev aesthetic with dark-first approach */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Light Mode Colors */
+    --background: 240 10% 98%;
+    --foreground: 240 10% 8%;
+    
+    --card: 240 10% 100%;
+    --card-foreground: 240 10% 8%;
+    
+    --popover: 240 10% 100%;
+    --popover-foreground: 240 10% 8%;
+    
+    --primary: 240 70% 60%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 240 20% 95%;
+    --secondary-foreground: 240 10% 20%;
+    
+    --muted: 240 10% 95%;
+    --muted-foreground: 240 5% 45%;
+    
+    --accent: 180 80% 60%;
+    --accent-foreground: 240 10% 8%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 240 20% 90%;
+    --input: 240 20% 90%;
+    --ring: 240 70% 60%;
+    
+    --expense-blue: 240 70% 60%;
+    --expense-purple: 280 70% 65%;
+    --expense-teal: 180 80% 60%;
+    --expense-gradient-start: 240 70% 60%;
+    --expense-gradient-end: 280 70% 65%;
+    
+    --radius: 1rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Dark Mode Colors - Primary theme */
+    --background: 240 15% 8%;
+    --foreground: 240 10% 95%;
+    
+    --card: 240 15% 12%;
+    --card-foreground: 240 10% 95%;
+    
+    --popover: 240 15% 12%;
+    --popover-foreground: 240 10% 95%;
+    
+    --primary: 240 70% 65%;
+    --primary-foreground: 240 15% 8%;
+    
+    --secondary: 240 15% 18%;
+    --secondary-foreground: 240 10% 85%;
+    
+    --muted: 240 15% 18%;
+    --muted-foreground: 240 10% 65%;
+    
+    --accent: 180 80% 65%;
+    --accent-foreground: 240 15% 8%;
+    
+    --destructive: 0 70% 65%;
+    --destructive-foreground: 240 10% 95%;
+    
+    --border: 240 20% 20%;
+    --input: 240 20% 20%;
+    --ring: 240 70% 65%;
+    
+    --expense-blue: 240 70% 65%;
+    --expense-purple: 280 70% 70%;
+    --expense-teal: 180 80% 65%;
+    --expense-gradient-start: 240 70% 65%;
+    --expense-gradient-end: 280 70% 70%;
   }
 }
 
@@ -98,8 +88,115 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Glassmorphic card styles */
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl shadow-xl;
+  }
+  
+  .glass-button {
+    @apply bg-primary/10 backdrop-blur-md border border-primary/20 rounded-xl transition-all duration-200 hover:bg-primary/20 hover:border-primary/40;
+  }
+  
+  /* Gradient backgrounds */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--expense-gradient-start)) 0%, hsl(var(--expense-gradient-end)) 100%);
+  }
+  
+  .gradient-card {
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+  }
+  
+  /* Smooth animations */
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out;
+  }
+  
+  /* Touch-friendly minimum sizes */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  /* Category color classes */
+  .category-food { @apply bg-orange-500/20 text-orange-600 dark:text-orange-400; }
+  .category-rent { @apply bg-blue-500/20 text-blue-600 dark:text-blue-400; }
+  .category-transport { @apply bg-green-500/20 text-green-600 dark:text-green-400; }
+  .category-shopping { @apply bg-purple-500/20 text-purple-600 dark:text-purple-400; }
+  .category-bills { @apply bg-red-500/20 text-red-600 dark:text-red-400; }
+  .category-medical { @apply bg-teal-500/20 text-teal-600 dark:text-teal-400; }
+  .category-education { @apply bg-indigo-500/20 text-indigo-600 dark:text-indigo-400; }
+  .category-misc { @apply bg-gray-500/20 text-gray-600 dark:text-gray-400; }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .glass-card {
+    @apply bg-card border-2 border-foreground/20;
+  }
+}
+
+/* Large text support */
+@media (min-width: 640px) {
+  .responsive-text {
+    @apply text-lg;
   }
 }

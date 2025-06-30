@@ -10,6 +10,7 @@ import { AddExpenseModal } from "@/components/AddExpenseModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/LoadingScreen";
 
@@ -34,12 +35,14 @@ const Index = () => {
   if (!isAuthenticated) {
     return (
       <ThemeProvider>
-        <div className="min-h-screen bg-background">
-          <AuthModal 
-            isOpen={showAuthModal} 
-            onClose={() => setShowAuthModal(false)}
-          />
-        </div>
+        <LanguageProvider>
+          <div className="min-h-screen bg-background">
+            <AuthModal 
+              isOpen={showAuthModal} 
+              onClose={() => setShowAuthModal(false)}
+            />
+          </div>
+        </LanguageProvider>
       </ThemeProvider>
     );
   }
@@ -63,29 +66,31 @@ const Index = () => {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-background text-foreground">
-        {/* Main Content */}
-        <main className="pb-20 min-h-screen">
-          <div className="animate-fade-in">
-            {renderActiveTab()}
-          </div>
-        </main>
+      <LanguageProvider>
+        <div className="min-h-screen bg-background text-foreground">
+          {/* Main Content */}
+          <main className="pb-20 min-h-screen">
+            <div className="animate-fade-in">
+              {renderActiveTab()}
+            </div>
+          </main>
 
-        {/* Floating Action Button */}
-        <FloatingActionButton onClick={() => setShowAddExpense(true)} />
+          {/* Floating Action Button */}
+          <FloatingActionButton onClick={() => setShowAddExpense(true)} />
 
-        {/* Bottom Navigation */}
-        <BottomNavigation 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab} 
-        />
+          {/* Bottom Navigation */}
+          <BottomNavigation 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab} 
+          />
 
-        {/* Add Expense Modal */}
-        <AddExpenseModal 
-          isOpen={showAddExpense}
-          onClose={() => setShowAddExpense(false)}
-        />
-      </div>
+          {/* Add Expense Modal */}
+          <AddExpenseModal 
+            isOpen={showAddExpense}
+            onClose={() => setShowAddExpense(false)}
+          />
+        </div>
+      </LanguageProvider>
     </ThemeProvider>
   );
 };

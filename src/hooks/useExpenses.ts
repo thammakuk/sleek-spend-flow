@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
@@ -161,23 +160,27 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Reload to get fresh data
-    await loadExpenses();
+    // Immediately refresh all data
+    await loadData();
   };
 
   const updateExpense = async (id: string, updates: Partial<Expense>) => {
+    const updateData: any = {};
+    
+    if (updates.amount !== undefined) updateData.amount = parseFloat(updates.amount.toString());
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.categoryId !== undefined) updateData.category_id = updates.categoryId;
+    if (updates.date !== undefined) updateData.date = updates.date;
+    if (updates.paymentMethod !== undefined) updateData.payment_method = updates.paymentMethod;
+    if (updates.recurring !== undefined) {
+      updateData.recurring_enabled = updates.recurring.enabled;
+      updateData.recurring_frequency = updates.recurring.frequency;
+    }
+    if (updates.receiptUrl !== undefined) updateData.receipt_url = updates.receiptUrl;
+
     const { error } = await supabase
       .from('expenses')
-      .update({
-        amount: updates.amount ? parseFloat(updates.amount.toString()) : undefined,
-        description: updates.description,
-        category_id: updates.categoryId,
-        date: updates.date,
-        payment_method: updates.paymentMethod,
-        recurring_enabled: updates.recurring?.enabled,
-        recurring_frequency: updates.recurring?.frequency,
-        receipt_url: updates.receiptUrl
-      })
+      .update(updateData)
       .eq('id', id);
 
     if (error) {
@@ -185,8 +188,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Reload data to get fresh state
-    await loadExpenses();
+    // Immediately refresh all data
+    await loadData();
   };
 
   const deleteExpense = async (id: string) => {
@@ -200,8 +203,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Reload data to get fresh state
-    await loadExpenses();
+    // Immediately refresh all data
+    await loadData();
   };
 
   const addCategory = async (category: Omit<Category, 'id'>) => {
@@ -224,8 +227,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Reload data to get fresh state
-    await loadCategories();
+    // Immediately refresh all data
+    await loadData();
   };
 
   const updateCategory = async (id: string, updates: Partial<Category>) => {
@@ -243,8 +246,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Reload data to get fresh state
-    await loadCategories();
+    // Immediately refresh all data
+    await loadData();
   };
 
   const deleteCategory = async (id: string) => {
@@ -264,8 +267,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Reload data to get fresh state
-    await loadCategories();
+    // Immediately refresh all data
+    await loadData();
   };
 
   const addBudget = async (budget: Omit<Budget, 'id'>) => {
@@ -287,18 +290,20 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Reload data to get fresh state
-    await loadBudgets();
+    // Immediately refresh all data
+    await loadData();
   };
 
   const updateBudget = async (id: string, updates: Partial<Budget>) => {
+    const updateData: any = {};
+    
+    if (updates.categoryId !== undefined) updateData.category_id = updates.categoryId;
+    if (updates.limit !== undefined) updateData.limit_amount = parseFloat(updates.limit.toString());
+    if (updates.period !== undefined) updateData.period = updates.period;
+
     const { error } = await supabase
       .from('budgets')
-      .update({
-        category_id: updates.categoryId,
-        limit_amount: updates.limit ? parseFloat(updates.limit.toString()) : undefined,
-        period: updates.period
-      })
+      .update(updateData)
       .eq('id', id);
 
     if (error) {
@@ -306,8 +311,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Reload data to get fresh state
-    await loadBudgets();
+    // Immediately refresh all data
+    await loadData();
   };
 
   const deleteBudget = async (id: string) => {
@@ -321,8 +326,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Reload data to get fresh state
-    await loadBudgets();
+    // Immediately refresh all data
+    await loadData();
   };
 
   const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);

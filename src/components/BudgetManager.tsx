@@ -18,10 +18,12 @@ import {
 import { useExpenses, Budget } from "@/hooks/useExpenses";
 import { formatCurrency } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const BudgetManager = () => {
   const { budgets, categories, addBudget, updateBudget, deleteBudget, getBudgetProgress } = useExpenses();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
   const [formData, setFormData] = useState({
@@ -52,13 +54,13 @@ export const BudgetManager = () => {
       if (editingBudget) {
         await updateBudget(editingBudget.id, budgetData);
         toast({
-          title: "Budget updated",
+          title: t('budgetUpdated') || "Budget updated",
           description: "Your budget has been successfully updated."
         });
       } else {
         await addBudget(budgetData);
         toast({
-          title: "Budget created",
+          title: t('budgetCreated') || "Budget created", 
           description: "Your new budget has been created."
         });
       }
@@ -112,7 +114,7 @@ export const BudgetManager = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Budget Manager</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('budgetManager')}</h1>
           <p className="text-muted-foreground mt-1">Track and manage your spending limits</p>
         </div>
         
@@ -123,27 +125,27 @@ export const BudgetManager = () => {
           <DialogTrigger asChild>
             <Button className="touch-target">
               <Plus className="h-4 w-4 mr-2" />
-              Add Budget
+              {t('addBudget')}
             </Button>
           </DialogTrigger>
           <DialogContent className="glass-card">
             <DialogHeader>
               <DialogTitle>
-                {editingBudget ? 'Edit Budget' : 'Create New Budget'}
+                {editingBudget ? t('editBudget') : t('createBudget')}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Category (Optional)</label>
+                <label className="text-sm font-medium">{t('category')} (Optional)</label>
                 <Select 
                   value={formData.categoryId} 
                   onValueChange={(value) => setFormData(prev => ({ ...prev, categoryId: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Overall budget or select category" />
+                    <SelectValue placeholder={t('overallBudget') + " or select category"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Overall Budget</SelectItem>
+                    <SelectItem value="">{t('overallBudget')}</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         <div className="flex items-center space-x-2">
@@ -157,7 +159,7 @@ export const BudgetManager = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium">Budget Amount</label>
+                <label className="text-sm font-medium">{t('budgetLimit')}</label>
                 <Input
                   type="number"
                   step="0.01"
@@ -178,22 +180,22 @@ export const BudgetManager = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="yearly">Yearly</SelectItem>
+                    <SelectItem value="monthly">{t('monthly')}</SelectItem>
+                    <SelectItem value="yearly">{t('yearly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex space-x-2 pt-4">
                 <Button type="submit" className="flex-1">
-                  {editingBudget ? 'Update Budget' : 'Create Budget'}
+                  {editingBudget ? t('update') + ' Budget' : t('create') + ' Budget'}
                 </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={() => setIsAddDialogOpen(false)}
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
               </div>
             </form>
@@ -206,7 +208,7 @@ export const BudgetManager = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Target className="h-5 w-5 text-primary" />
-            <span>Overall Budget Status</span>
+            <span>{t('overallBudget')} Status</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -268,10 +270,10 @@ export const BudgetManager = () => {
                     )}
                     <div>
                       <CardTitle className="text-lg">
-                        {category ? category.name : 'Overall Budget'}
+                        {category ? category.name : t('overallBudget')}
                       </CardTitle>
                       <Badge variant="secondary" className="text-xs">
-                        {budget.period}
+                        {t(budget.period)}
                       </Badge>
                     </div>
                   </div>
@@ -353,7 +355,7 @@ export const BudgetManager = () => {
               </p>
               <Button onClick={() => setIsAddDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Create Budget
+                {t('createBudget')}
               </Button>
             </div>
           </CardContent>

@@ -4,6 +4,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { ExpenseHistory } from "@/components/ExpenseHistory";
 import { Insights } from "@/components/Insights";
 import { Settings } from "@/components/Settings";
+import { BudgetManager } from "@/components/BudgetManager";
 import { AuthModal } from "@/components/AuthModal";
 import { AddExpenseModal } from "@/components/AddExpenseModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -12,7 +13,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingScreen } from "@/components/LoadingScreen";
 
-export type TabType = 'dashboard' | 'history' | 'insights' | 'settings';
+export type TabType = 'dashboard' | 'history' | 'insights' | 'budgets' | 'settings';
 
 const Index = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -51,6 +52,8 @@ const Index = () => {
         return <ExpenseHistory />;
       case 'insights':
         return <Insights />;
+      case 'budgets':
+        return <BudgetManager />;
       case 'settings':
         return <Settings />;
       default:

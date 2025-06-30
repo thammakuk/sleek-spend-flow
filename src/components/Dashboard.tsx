@@ -11,15 +11,21 @@ import {
   Calendar,
   AlertTriangle,
   Eye,
-  EyeOff
+  EyeOff,
+  Target,
+  ArrowLeft
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { useExpenses } from "@/hooks/useExpenses";
 import { formatCurrency } from "@/lib/utils";
 import { LoadingScreen } from "./LoadingScreen";
 
-export const Dashboard = () => {
-  const { expenses, totalSpent, budgets, categories, isLoading } = useExpenses();
+interface DashboardProps {
+  onBack?: () => void;
+}
+
+export const Dashboard = ({ onBack }: DashboardProps) => {
+  const { expenses, totalSpent, budgets, categories, isLoading, getBudgetProgress } = useExpenses();
   const [showAmounts, setShowAmounts] = useState(true);
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -36,9 +42,8 @@ export const Dashboard = () => {
 
   // Calculate monthly totals
   const monthlyTotal = currentMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const totalBudget = budgets.reduce((sum, budget) => sum + budget.limit, 0);
-  const remainingBudget = totalBudget - monthlyTotal;
-  const budgetProgress = totalBudget > 0 ? (monthlyTotal / totalBudget) * 100 : 0;
+  const budgetProgress = getBudgetProgress();
+  const remainingBudget = budgetProgress.remaining;
 
   // Category breakdown
   const categoryBreakdown = categories.map(category => {
@@ -73,14 +78,26 @@ export const Dashboard = () => {
     <div className="p-6 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            {new Date().toLocaleDateString('en-US', { 
-              month: 'long', 
-              year: 'numeric' 
-            })}
-          </p>
+        <div className="flex items-center space-x-4">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="touch-target"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              {new Date().toLocaleDateString('en-IN', { 
+                month: 'long', 
+                year: 'numeric' 
+              })}
+            </p>
+          </div>
         </div>
         <Button
           variant="ghost"
@@ -121,9 +138,9 @@ export const Dashboard = () => {
         <Card className="glass-card animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Budget Remaining
+              Budget Status
             </CardTitle>
-            <Calendar className="h-4 w-4 text-accent" />
+            <Target className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
@@ -131,11 +148,11 @@ export const Dashboard = () => {
             </div>
             <div className="mt-2">
               <Progress 
-                value={budgetProgress} 
+                value={Math.min(budgetProgress.percentage, 100)} 
                 className="h-2"
               />
               <p className="text-sm text-muted-foreground mt-1">
-                {budgetProgress.toFixed(1)}% of budget used
+                {budgetProgress.percentage.toFixed(1)}% of budget used
               </p>
             </div>
           </CardContent>
@@ -160,7 +177,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Budget Alert */}
-      {budgetProgress > 80 && (
+      {budgetProgress.percentage > 80 && (
         <Card className="glass-card border-orange-500/50 bg-orange-500/10 animate-slide-up">
           <CardContent className="flex items-center space-x-3 pt-6">
             <AlertTriangle className="h-5 w-5 text-orange-500 flex-shrink-0" />
@@ -169,7 +186,7 @@ export const Dashboard = () => {
                 Budget Alert
               </p>
               <p className="text-sm text-orange-600 dark:text-orange-400">
-                You've used {budgetProgress.toFixed(1)}% of your monthly budget. Consider reviewing your spending.
+                You've used {budgetProgress.percentage.toFixed(1)}% of your monthly budget. Consider reviewing your spending.
               </p>
             </div>
           </CardContent>
@@ -244,7 +261,7 @@ export const Dashboard = () => {
                         <div>
                           <p className="font-medium text-foreground">{expense.description}</p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(expense.date).toLocaleDateString()}
+                            {new Date(expense.date).toLocaleDateString('en-IN')}
                           </p>
                         </div>
                       </div>

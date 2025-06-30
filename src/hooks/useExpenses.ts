@@ -101,7 +101,7 @@ export const useExpenses = () => {
 
     const mappedExpenses: Expense[] = data.map(exp => ({
       id: exp.id,
-      amount: parseFloat(exp.amount),
+      amount: parseFloat(exp.amount.toString()),
       description: exp.description,
       categoryId: exp.category_id,
       date: exp.date,
@@ -130,7 +130,7 @@ export const useExpenses = () => {
     const mappedBudgets: Budget[] = data.map(budget => ({
       id: budget.id,
       categoryId: budget.category_id,
-      limit: parseFloat(budget.limit_amount),
+      limit: parseFloat(budget.limit_amount.toString()),
       period: budget.period as 'monthly' | 'yearly'
     }));
 
@@ -144,7 +144,7 @@ export const useExpenses = () => {
       .from('expenses')
       .insert({
         user_id: user.id,
-        amount: expense.amount,
+        amount: expense.amount.toString(),
         description: expense.description,
         category_id: expense.categoryId,
         date: expense.date,
@@ -161,29 +161,15 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Add to local state
-    const newExpense: Expense = {
-      id: data.id,
-      amount: parseFloat(data.amount),
-      description: data.description,
-      categoryId: data.category_id,
-      date: data.date,
-      paymentMethod: data.payment_method,
-      recurring: data.recurring_enabled ? {
-        enabled: data.recurring_enabled,
-        frequency: data.recurring_frequency
-      } : undefined,
-      receiptUrl: data.receipt_url
-    };
-
-    setExpenses(prev => [newExpense, ...prev]);
+    // Add to local state and reload to get fresh data
+    await loadExpenses();
   };
 
   const updateExpense = async (id: string, updates: Partial<Expense>) => {
     const { error } = await supabase
       .from('expenses')
       .update({
-        amount: updates.amount,
+        amount: updates.amount?.toString(),
         description: updates.description,
         category_id: updates.categoryId,
         date: updates.date,
@@ -199,9 +185,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    setExpenses(prev => prev.map(expense => 
-      expense.id === id ? { ...expense, ...updates } : expense
-    ));
+    // Reload data to get fresh state
+    await loadExpenses();
   };
 
   const deleteExpense = async (id: string) => {
@@ -215,7 +200,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    setExpenses(prev => prev.filter(expense => expense.id !== id));
+    // Reload data to get fresh state
+    await loadExpenses();
   };
 
   const addCategory = async (category: Omit<Category, 'id'>) => {
@@ -238,15 +224,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    const newCategory: Category = {
-      id: data.id,
-      name: data.name,
-      icon: data.icon,
-      color: data.color,
-      isCustom: data.is_custom
-    };
-
-    setCategories(prev => [...prev, newCategory]);
+    // Reload data to get fresh state
+    await loadCategories();
   };
 
   const updateCategory = async (id: string, updates: Partial<Category>) => {
@@ -264,9 +243,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    setCategories(prev => prev.map(category => 
-      category.id === id ? { ...category, ...updates } : category
-    ));
+    // Reload data to get fresh state
+    await loadCategories();
   };
 
   const deleteCategory = async (id: string) => {
@@ -286,7 +264,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    setCategories(prev => prev.filter(category => category.id !== id));
+    // Reload data to get fresh state
+    await loadCategories();
   };
 
   const addBudget = async (budget: Omit<Budget, 'id'>) => {
@@ -297,7 +276,7 @@ export const useExpenses = () => {
       .insert({
         user_id: user.id,
         category_id: budget.categoryId,
-        limit_amount: budget.limit,
+        limit_amount: budget.limit.toString(),
         period: budget.period
       })
       .select()
@@ -308,14 +287,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    const newBudget: Budget = {
-      id: data.id,
-      categoryId: data.category_id,
-      limit: parseFloat(data.limit_amount),
-      period: data.period
-    };
-
-    setBudgets(prev => [...prev, newBudget]);
+    // Reload data to get fresh state
+    await loadBudgets();
   };
 
   const updateBudget = async (id: string, updates: Partial<Budget>) => {
@@ -323,7 +296,7 @@ export const useExpenses = () => {
       .from('budgets')
       .update({
         category_id: updates.categoryId,
-        limit_amount: updates.limit,
+        limit_amount: updates.limit?.toString(),
         period: updates.period
       })
       .eq('id', id);
@@ -333,9 +306,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    setBudgets(prev => prev.map(budget => 
-      budget.id === id ? { ...budget, ...updates } : budget
-    ));
+    // Reload data to get fresh state
+    await loadBudgets();
   };
 
   const deleteBudget = async (id: string) => {
@@ -349,7 +321,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    setBudgets(prev => prev.filter(budget => budget.id !== id));
+    // Reload data to get fresh state
+    await loadBudgets();
   };
 
   const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -363,6 +336,34 @@ export const useExpenses = () => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startDate && expenseDate <= endDate;
     });
+  };
+
+  const getBudgetProgress = (categoryId?: string) => {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    const monthlyExpenses = expenses.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return expenseDate.getMonth() === currentMonth && 
+             expenseDate.getFullYear() === currentYear &&
+             (!categoryId || expense.categoryId === categoryId);
+    });
+
+    const spent = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    
+    const relevantBudgets = budgets.filter(budget => 
+      budget.period === 'monthly' && 
+      (!categoryId || budget.categoryId === categoryId)
+    );
+    
+    const totalBudget = relevantBudgets.reduce((sum, budget) => sum + budget.limit, 0);
+    
+    return {
+      spent,
+      budget: totalBudget,
+      remaining: totalBudget - spent,
+      percentage: totalBudget > 0 ? (spent / totalBudget) * 100 : 0
+    };
   };
 
   return {
@@ -382,5 +383,7 @@ export const useExpenses = () => {
     deleteBudget,
     getExpensesByCategory,
     getExpensesByDateRange,
+    getBudgetProgress,
+    refreshData: loadData,
   };
 };

@@ -144,7 +144,7 @@ export const useExpenses = () => {
       .from('expenses')
       .insert({
         user_id: user.id,
-        amount: expense.amount.toString(),
+        amount: parseFloat(expense.amount.toString()),
         description: expense.description,
         category_id: expense.categoryId,
         date: expense.date,
@@ -161,7 +161,7 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Add to local state and reload to get fresh data
+    // Reload to get fresh data
     await loadExpenses();
   };
 
@@ -169,7 +169,7 @@ export const useExpenses = () => {
     const { error } = await supabase
       .from('expenses')
       .update({
-        amount: updates.amount?.toString(),
+        amount: updates.amount ? parseFloat(updates.amount.toString()) : undefined,
         description: updates.description,
         category_id: updates.categoryId,
         date: updates.date,
@@ -276,7 +276,7 @@ export const useExpenses = () => {
       .insert({
         user_id: user.id,
         category_id: budget.categoryId,
-        limit_amount: budget.limit.toString(),
+        limit_amount: parseFloat(budget.limit.toString()),
         period: budget.period
       })
       .select()
@@ -296,7 +296,7 @@ export const useExpenses = () => {
       .from('budgets')
       .update({
         category_id: updates.categoryId,
-        limit_amount: updates.limit?.toString(),
+        limit_amount: updates.limit ? parseFloat(updates.limit.toString()) : undefined,
         period: updates.period
       })
       .eq('id', id);

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,16 +33,35 @@ export const Settings = () => {
   const { toast } = useToast();
   
   const [settings, setSettings] = useState({
-    currency: 'USD',
+    currency: 'INR',
     notifications: true,
     budgetAlerts: true,
     weeklyReports: false,
     biometricLock: false,
     language: 'en',
-    dateFormat: 'MM/DD/YYYY',
-    numberFormat: 'US',
+    dateFormat: 'DD/MM/YYYY',
+    numberFormat: 'IN',
     autoBackup: true,
   });
+
+  // Get user display name from metadata or email
+  const getUserDisplayName = () => {
+    if (user?.user_metadata?.full_name) return user.user_metadata.full_name;
+    if (user?.email) return user.email.split('@')[0];
+    return 'User';
+  };
+
+  // Get user avatar initial
+  const getUserInitial = () => {
+    const displayName = getUserDisplayName();
+    return displayName.charAt(0).toUpperCase();
+  };
+
+  // Get auth provider
+  const getAuthProvider = () => {
+    if (user?.app_metadata?.provider) return user.app_metadata.provider;
+    return 'email';
+  };
 
   const handleSettingChange = (key: string, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -56,12 +74,9 @@ export const Settings = () => {
   const handleExportData = () => {
     try {
       const allData = {
-        expenses: JSON.parse(localStorage.getItem('expense-tracker-expenses') || '[]'),
-        categories: JSON.parse(localStorage.getItem('expense-tracker-categories') || '[]'),
-        budgets: JSON.parse(localStorage.getItem('expense-tracker-budgets') || '[]'),
         settings,
         exportedAt: new Date().toISOString(),
-        user: { id: user?.id, email: user?.email, name: user?.name }
+        user: { id: user?.id, email: user?.email, name: getUserDisplayName() }
       };
 
       const dataStr = JSON.stringify(allData, null, 2);
@@ -97,15 +112,11 @@ export const Settings = () => {
       try {
         const data = JSON.parse(e.target?.result as string);
         
-        // Validate data structure
-        if (data.expenses && data.categories && data.budgets) {
-          localStorage.setItem('expense-tracker-expenses', JSON.stringify(data.expenses));
-          localStorage.setItem('expense-tracker-categories', JSON.stringify(data.categories));
-          localStorage.setItem('expense-tracker-budgets', JSON.stringify(data.budgets));
-          
+        if (data.settings) {
+          setSettings(data.settings);
           toast({
             title: "Data imported",
-            description: "Your backup has been restored successfully. Please refresh the page."
+            description: "Your settings have been restored successfully."
           });
         } else {
           throw new Error('Invalid backup file format');
@@ -125,13 +136,9 @@ export const Settings = () => {
   };
 
   const handleClearAllData = () => {
-    localStorage.removeItem('expense-tracker-expenses');
-    localStorage.removeItem('expense-tracker-categories');
-    localStorage.removeItem('expense-tracker-budgets');
-    
     toast({
       title: "Data cleared",
-      description: "All your expense data has been removed. Please refresh the page."
+      description: "All your local settings have been removed."
     });
   };
 
@@ -173,15 +180,15 @@ export const Settings = () => {
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center">
               <span className="text-xl font-bold text-white">
-                {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                {getUserInitial()}
               </span>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">{user?.name || 'User'}</h3>
+              <h3 className="font-semibold text-foreground">{getUserDisplayName()}</h3>
               <p className="text-muted-foreground">{user?.email}</p>
               <div className="flex items-center space-x-2 mt-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-xs text-muted-foreground">Connected via {user?.provider}</span>
+                <span className="text-xs text-muted-foreground">Connected via {getAuthProvider()}</span>
               </div>
             </div>
           </div>
@@ -251,6 +258,7 @@ export const Settings = () => {
                   </div>
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="INR">INR - Indian Rupee</SelectItem>
                   <SelectItem value="USD">USD - US Dollar</SelectItem>
                   <SelectItem value="EUR">EUR - Euro</SelectItem>
                   <SelectItem value="GBP">GBP - British Pound</SelectItem>
@@ -269,11 +277,18 @@ export const Settings = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Español</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                  <SelectItem value="de">Deutsch</SelectItem>
-                  <SelectItem value="it">Italiano</SelectItem>
-                  <SelectItem value="pt">Português</SelectItem>
+                  <SelectItem value="hi">हिन्दी (Hindi)</SelectItem>
+                  <SelectItem value="bn">বাংলা (Bengali)</SelectItem>
+                  <SelectItem value="te">తెలుగు (Telugu)</SelectItem>
+                  <SelectItem value="mr">मराठी (Marathi)</SelectItem>
+                  <SelectItem value="ta">தமிழ் (Tamil)</SelectItem>
+                  <SelectItem value="gu">ગુજરાતી (Gujarati)</SelectItem>
+                  <SelectItem value="kn">ಕನ್ನಡ (Kannada)</SelectItem>
+                  <SelectItem value="ml">മലയാളം (Malayalam)</SelectItem>
+                  <SelectItem value="pa">ਪੰਜਾਬੀ (Punjabi)</SelectItem>
+                  <SelectItem value="or">ଓଡିଆ (Odia)</SelectItem>
+                  <SelectItem value="as">অসমীয়া (Assamese)</SelectItem>
+                  <SelectItem value="ur">اردو (Urdu)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -287,8 +302,8 @@ export const Settings = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="DD/MM/YYYY">DD/MM/YYYY (Indian)</SelectItem>
                   <SelectItem value="MM/DD/YYYY">MM/DD/YYYY (US)</SelectItem>
-                  <SelectItem value="DD/MM/YYYY">DD/MM/YYYY (EU)</SelectItem>
                   <SelectItem value="YYYY-MM-DD">YYYY-MM-DD (ISO)</SelectItem>
                 </SelectContent>
               </Select>
@@ -301,9 +316,9 @@ export const Settings = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="IN">1,23,456.78 (Indian)</SelectItem>
                   <SelectItem value="US">1,234.56 (US)</SelectItem>
                   <SelectItem value="EU">1.234,56 (EU)</SelectItem>
-                  <SelectItem value="IN">1,23,456.78 (IN)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -485,7 +500,7 @@ export const Settings = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Sign Out</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to sign out? Your data will be saved locally on this device.
+                  Are you sure you want to sign out? Your data will be saved securely in the cloud.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

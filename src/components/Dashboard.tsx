@@ -13,16 +13,21 @@ import {
   Eye,
   EyeOff
 } from "lucide-react";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { useExpenses } from "@/hooks/useExpenses";
 import { formatCurrency } from "@/lib/utils";
+import { LoadingScreen } from "./LoadingScreen";
 
 export const Dashboard = () => {
-  const { expenses, totalSpent, budgets, categories } = useExpenses();
+  const { expenses, totalSpent, budgets, categories, isLoading } = useExpenses();
   const [showAmounts, setShowAmounts] = useState(true);
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   // Get current month expenses
   const currentMonthExpenses = expenses.filter(expense => {
     const expenseDate = new Date(expense.date);

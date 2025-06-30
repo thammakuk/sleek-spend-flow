@@ -1,5 +1,7 @@
 
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./useAuth";
 
 export interface Expense {
   id: string;
@@ -25,151 +27,328 @@ export interface Category {
 
 export interface Budget {
   id: string;
-  categoryId?: string; // undefined means overall budget
+  categoryId?: string;
   limit: number;
   period: 'monthly' | 'yearly';
 }
 
-const defaultCategories: Category[] = [
-  { id: '1', name: 'Food', icon: '🍕', color: '#F97316' },
-  { id: '2', name: 'Rent', icon: '🏠', color: '#3B82F6' },
-  { id: '3', name: 'Transport', icon: '🚗', color: '#10B981' },
-  { id: '4', name: 'Shopping', icon: '🛒', color: '#8B5CF6' },
-  { id: '5', name: 'Bills', icon: '⚡', color: '#EF4444' },
-  { id: '6', name: 'Medical', icon: '🏥', color: '#14B8A6' },
-  { id: '7', name: 'Education', icon: '📚', color: '#6366F1' },
-  { id: '8', name: 'Misc', icon: '📦', color: '#6B7280' },
-];
-
-const sampleExpenses: Expense[] = [
-  {
-    id: '1',
-    amount: 25.50,
-    description: 'Lunch at downtown cafe',
-    categoryId: '1',
-    date: new Date().toISOString(),
-    paymentMethod: 'Credit Card'
-  },
-  {
-    id: '2',
-    amount: 1200,
-    description: 'Monthly rent payment',
-    categoryId: '2',
-    date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    paymentMethod: 'Bank Transfer',
-    recurring: { enabled: true, frequency: 'monthly' }
-  },
-  {
-    id: '3',
-    amount: 45.80,
-    description: 'Gas station fill-up',
-    categoryId: '3',
-    date: new Date(Date.now() - 2 * 86400000).toISOString(), // 2 days ago
-    paymentMethod: 'Debit Card'
-  },
-];
-
-const sampleBudgets: Budget[] = [
-  { id: '1', limit: 2500, period: 'monthly' }, // Overall monthly budget
-  { id: '2', categoryId: '1', limit: 500, period: 'monthly' }, // Food budget
-  { id: '3', categoryId: '3', limit: 200, period: 'monthly' }, // Transport budget
-];
-
 export const useExpenses = () => {
+  const { user, isAuthenticated } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [categories, setCategories] = useState<Category[]>(defaultCategories);
-  const [budgets, setBudgets] = useState<Budget[]>(sampleBudgets);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from localStorage on mount
+  // Load data when user is authenticated
   useEffect(() => {
-    const savedExpenses = localStorage.getItem('expense-tracker-expenses');
-    const savedCategories = localStorage.getItem('expense-tracker-categories');
-    const savedBudgets = localStorage.getItem('expense-tracker-budgets');
-
-    if (savedExpenses) {
-      setExpenses(JSON.parse(savedExpenses));
+    if (isAuthenticated && user) {
+      loadData();
     } else {
-      setExpenses(sampleExpenses);
+      setExpenses([]);
+      setCategories([]);
+      setBudgets([]);
+      setIsLoading(false);
     }
+  }, [isAuthenticated, user]);
 
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      await Promise.all([
+        loadCategories(),
+        loadExpenses(),
+        loadBudgets()
+      ]);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    if (savedBudgets) {
-      setBudgets(JSON.parse(savedBudgets));
-    }
-  }, []);
-
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    localStorage.setItem('expense-tracker-expenses', JSON.stringify(expenses));
-  }, [expenses]);
-
-  useEffect(() => {
-    localStorage.setItem('expense-tracker-categories', JSON.stringify(categories));
-  }, [categories]);
-
-  useEffect(() => {
-    localStorage.setItem('expense-tracker-budgets', JSON.stringify(budgets));
-  }, [budgets]);
-
-  const addExpense = (expense: Omit<Expense, 'id'>) => {
-    const newExpense: Expense = {
-      ...expense,
-      id: Date.now().toString(),
-    };
-    setExpenses(prev => [...prev, newExpense]);
   };
 
-  const updateExpense = (id: string, updates: Partial<Expense>) => {
+  const loadCategories = async () => {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('created_at');
+
+    if (error) {
+      console.error('Error loading categories:', error);
+      return;
+    }
+
+    const mappedCategories: Category[] = data.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      icon: cat.icon,
+      color: cat.color,
+      isCustom: cat.is_custom
+    }));
+
+    setCategories(mappedCategories);
+  };
+
+  const loadExpenses = async () => {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error('Error loading expenses:', error);
+      return;
+    }
+
+    const mappedExpenses: Expense[] = data.map(exp => ({
+      id: exp.id,
+      amount: parseFloat(exp.amount),
+      description: exp.description,
+      categoryId: exp.category_id,
+      date: exp.date,
+      paymentMethod: exp.payment_method,
+      recurring: exp.recurring_enabled ? {
+        enabled: exp.recurring_enabled,
+        frequency: exp.recurring_frequency as 'weekly' | 'monthly' | 'yearly'
+      } : undefined,
+      receiptUrl: exp.receipt_url
+    }));
+
+    setExpenses(mappedExpenses);
+  };
+
+  const loadBudgets = async () => {
+    const { data, error } = await supabase
+      .from('budgets')
+      .select('*')
+      .order('created_at');
+
+    if (error) {
+      console.error('Error loading budgets:', error);
+      return;
+    }
+
+    const mappedBudgets: Budget[] = data.map(budget => ({
+      id: budget.id,
+      categoryId: budget.category_id,
+      limit: parseFloat(budget.limit_amount),
+      period: budget.period as 'monthly' | 'yearly'
+    }));
+
+    setBudgets(mappedBudgets);
+  };
+
+  const addExpense = async (expense: Omit<Expense, 'id'>) => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('expenses')
+      .insert({
+        user_id: user.id,
+        amount: expense.amount,
+        description: expense.description,
+        category_id: expense.categoryId,
+        date: expense.date,
+        payment_method: expense.paymentMethod,
+        recurring_enabled: expense.recurring?.enabled || false,
+        recurring_frequency: expense.recurring?.frequency,
+        receipt_url: expense.receiptUrl
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding expense:', error);
+      throw error;
+    }
+
+    // Add to local state
+    const newExpense: Expense = {
+      id: data.id,
+      amount: parseFloat(data.amount),
+      description: data.description,
+      categoryId: data.category_id,
+      date: data.date,
+      paymentMethod: data.payment_method,
+      recurring: data.recurring_enabled ? {
+        enabled: data.recurring_enabled,
+        frequency: data.recurring_frequency
+      } : undefined,
+      receiptUrl: data.receipt_url
+    };
+
+    setExpenses(prev => [newExpense, ...prev]);
+  };
+
+  const updateExpense = async (id: string, updates: Partial<Expense>) => {
+    const { error } = await supabase
+      .from('expenses')
+      .update({
+        amount: updates.amount,
+        description: updates.description,
+        category_id: updates.categoryId,
+        date: updates.date,
+        payment_method: updates.paymentMethod,
+        recurring_enabled: updates.recurring?.enabled,
+        recurring_frequency: updates.recurring?.frequency,
+        receipt_url: updates.receiptUrl
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating expense:', error);
+      throw error;
+    }
+
     setExpenses(prev => prev.map(expense => 
       expense.id === id ? { ...expense, ...updates } : expense
     ));
   };
 
-  const deleteExpense = (id: string) => {
+  const deleteExpense = async (id: string) => {
+    const { error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting expense:', error);
+      throw error;
+    }
+
     setExpenses(prev => prev.filter(expense => expense.id !== id));
   };
 
-  const addCategory = (category: Omit<Category, 'id'>) => {
+  const addCategory = async (category: Omit<Category, 'id'>) => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({
+        user_id: user.id,
+        name: category.name,
+        icon: category.icon,
+        color: category.color,
+        is_custom: true
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding category:', error);
+      throw error;
+    }
+
     const newCategory: Category = {
-      ...category,
-      id: Date.now().toString(),
-      isCustom: true,
+      id: data.id,
+      name: data.name,
+      icon: data.icon,
+      color: data.color,
+      isCustom: data.is_custom
     };
+
     setCategories(prev => [...prev, newCategory]);
   };
 
-  const updateCategory = (id: string, updates: Partial<Category>) => {
+  const updateCategory = async (id: string, updates: Partial<Category>) => {
+    const { error } = await supabase
+      .from('categories')
+      .update({
+        name: updates.name,
+        icon: updates.icon,
+        color: updates.color
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating category:', error);
+      throw error;
+    }
+
     setCategories(prev => prev.map(category => 
       category.id === id ? { ...category, ...updates } : category
     ));
   };
 
-  const deleteCategory = (id: string) => {
-    // Don't delete if it's being used by expenses
+  const deleteCategory = async (id: string) => {
+    // Check if category is being used by expenses
     const isUsed = expenses.some(expense => expense.categoryId === id);
-    if (!isUsed) {
-      setCategories(prev => prev.filter(category => category.id !== id));
+    if (isUsed) {
+      throw new Error('Cannot delete category that is being used by expenses');
     }
+
+    const { error } = await supabase
+      .from('categories')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting category:', error);
+      throw error;
+    }
+
+    setCategories(prev => prev.filter(category => category.id !== id));
   };
 
-  const addBudget = (budget: Omit<Budget, 'id'>) => {
+  const addBudget = async (budget: Omit<Budget, 'id'>) => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('budgets')
+      .insert({
+        user_id: user.id,
+        category_id: budget.categoryId,
+        limit_amount: budget.limit,
+        period: budget.period
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding budget:', error);
+      throw error;
+    }
+
     const newBudget: Budget = {
-      ...budget,
-      id: Date.now().toString(),
+      id: data.id,
+      categoryId: data.category_id,
+      limit: parseFloat(data.limit_amount),
+      period: data.period
     };
+
     setBudgets(prev => [...prev, newBudget]);
   };
 
-  const updateBudget = (id: string, updates: Partial<Budget>) => {
+  const updateBudget = async (id: string, updates: Partial<Budget>) => {
+    const { error } = await supabase
+      .from('budgets')
+      .update({
+        category_id: updates.categoryId,
+        limit_amount: updates.limit,
+        period: updates.period
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating budget:', error);
+      throw error;
+    }
+
     setBudgets(prev => prev.map(budget => 
       budget.id === id ? { ...budget, ...updates } : budget
     ));
   };
 
-  const deleteBudget = (id: string) => {
+  const deleteBudget = async (id: string) => {
+    const { error } = await supabase
+      .from('budgets')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting budget:', error);
+      throw error;
+    }
+
     setBudgets(prev => prev.filter(budget => budget.id !== id));
   };
 
@@ -191,6 +370,7 @@ export const useExpenses = () => {
     categories,
     budgets,
     totalSpent,
+    isLoading,
     addExpense,
     updateExpense,
     deleteExpense,

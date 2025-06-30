@@ -9,7 +9,151 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      budgets: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          id: string
+          limit_amount: number
+          period: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          limit_amount: number
+          period?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          id?: string
+          limit_amount?: number
+          period?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budgets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          color: string
+          created_at: string | null
+          icon: string
+          id: string
+          is_custom: boolean | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color: string
+          created_at?: string | null
+          icon: string
+          id?: string
+          is_custom?: boolean | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string | null
+          icon?: string
+          id?: string
+          is_custom?: boolean | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category_id: string
+          created_at: string | null
+          date: string
+          description: string
+          id: string
+          payment_method: string
+          receipt_url: string | null
+          recurring_enabled: boolean | null
+          recurring_frequency: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category_id: string
+          created_at?: string | null
+          date?: string
+          description: string
+          id?: string
+          payment_method: string
+          receipt_url?: string | null
+          recurring_enabled?: boolean | null
+          recurring_frequency?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string
+          created_at?: string | null
+          date?: string
+          description?: string
+          id?: string
+          payment_method?: string
+          receipt_url?: string | null
+          recurring_enabled?: boolean | null
+          recurring_frequency?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

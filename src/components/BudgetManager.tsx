@@ -27,7 +27,7 @@ export const BudgetManager = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
   const [formData, setFormData] = useState({
-    categoryId: '',
+    categoryId: 'overall',
     limit: '',
     period: 'monthly' as 'monthly' | 'yearly'
   });
@@ -46,7 +46,7 @@ export const BudgetManager = () => {
 
     try {
       const budgetData = {
-        categoryId: formData.categoryId || undefined,
+        categoryId: formData.categoryId === 'overall' ? undefined : formData.categoryId,
         limit: parseFloat(formData.limit),
         period: formData.period
       };
@@ -65,7 +65,7 @@ export const BudgetManager = () => {
         });
       }
 
-      setFormData({ categoryId: '', limit: '', period: 'monthly' });
+      setFormData({ categoryId: 'overall', limit: '', period: 'monthly' });
       setIsAddDialogOpen(false);
       setEditingBudget(null);
     } catch (error) {
@@ -80,7 +80,7 @@ export const BudgetManager = () => {
   const handleEdit = (budget: Budget) => {
     setEditingBudget(budget);
     setFormData({
-      categoryId: budget.categoryId || '',
+      categoryId: budget.categoryId || 'overall',
       limit: budget.limit.toString(),
       period: budget.period
     });
@@ -104,7 +104,7 @@ export const BudgetManager = () => {
   };
 
   const resetForm = () => {
-    setFormData({ categoryId: '', limit: '', period: 'monthly' });
+    setFormData({ categoryId: 'overall', limit: '', period: 'monthly' });
     setEditingBudget(null);
   };
 
@@ -145,7 +145,7 @@ export const BudgetManager = () => {
                     <SelectValue placeholder={t('overallBudget') + " or select category"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{t('overallBudget')}</SelectItem>
+                    <SelectItem value="overall">{t('overallBudget')}</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         <div className="flex items-center space-x-2">

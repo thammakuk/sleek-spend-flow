@@ -212,7 +212,13 @@ export const BudgetManager = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Total Budget</p>
+              <p className="text-2xl font-bold text-foreground">
+                {formatCurrency(overallProgress.budget)}
+              </p>
+            </div>
             <div className="text-center">
               <p className="text-sm text-muted-foreground">Spent</p>
               <p className="text-2xl font-bold text-foreground">
@@ -220,9 +226,9 @@ export const BudgetManager = () => {
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">Budget</p>
-              <p className="text-2xl font-bold text-foreground">
-                {formatCurrency(overallProgress.budget)}
+              <p className="text-sm text-muted-foreground">Allocated</p>
+              <p className="text-2xl font-bold text-primary">
+                {formatCurrency(overallProgress.allocated || 0)}
               </p>
             </div>
             <div className="text-center">
@@ -232,11 +238,23 @@ export const BudgetManager = () => {
               </p>
             </div>
           </div>
+          
+          {overallProgress.unallocated !== undefined && overallProgress.budget > 0 && (
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Unallocated Budget:</span>
+                <span className="font-medium text-foreground">
+                  {formatCurrency(overallProgress.unallocated)}
+                </span>
+              </div>
+            </div>
+          )}
+          
           {overallProgress.budget > 0 && (
             <div className="mt-4">
               <Progress value={overallProgress.percentage} className="h-3" />
               <p className="text-sm text-muted-foreground mt-2 text-center">
-                {overallProgress.percentage.toFixed(1)}% of budget used
+                {overallProgress.percentage.toFixed(1)}% of total budget used
               </p>
             </div>
           )}

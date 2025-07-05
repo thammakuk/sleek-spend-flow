@@ -361,27 +361,52 @@ export const useExpenses = () => {
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     
+    // Get current month expenses
     const monthlyExpenses = expenses.filter(expense => {
       const expenseDate = new Date(expense.date);
       return expenseDate.getMonth() === currentMonth && 
-             expenseDate.getFullYear() === currentYear &&
-             (!categoryId || expense.categoryId === categoryId);
+             expenseDate.getFullYear() === currentYear;
     });
 
-    const spent = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-    
-    const relevantBudgets = budgets.filter(budget => 
-      budget.period === 'monthly' && 
-      (!categoryId || budget.categoryId === categoryId)
+    // Get overall budget (no category_id)
+    const overallBudget = budgets.find(budget => 
+      budget.period === 'monthly' && !budget.categoryId
     );
-    
-    const totalBudget = relevantBudgets.reduce((sum, budget) => sum + budget.limit, 0);
+
+    // Get category budgets (with category_id)
+    const categoryBudgets = budgets.filter(budget => 
+      budget.period === 'monthly' && budget.categoryId
+    );
+
+    if (categoryId) {
+      // Return progress for specific category
+      const categoryExpenses = monthlyExpenses.filter(expense => expense.categoryId === categoryId);
+      const categorySpent = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+      const categoryBudget = budgets.find(budget => 
+        budget.period === 'monthly' && budget.categoryId === categoryId
+      );
+      const budgetLimit = categoryBudget?.limit || 0;
+      
+      return {
+        spent: categorySpent,
+        budget: budgetLimit,
+        remaining: budgetLimit - categorySpent,
+        percentage: budgetLimit > 0 ? (categorySpent / budgetLimit) * 100 : 0
+      };
+    }
+
+    // Return overall budget progress
+    const totalSpent = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const totalBudget = overallBudget?.limit || 0;
+    const allocatedBudget = categoryBudgets.reduce((sum, budget) => sum + budget.limit, 0);
     
     return {
-      spent,
+      spent: totalSpent,
       budget: totalBudget,
-      remaining: totalBudget - spent,
-      percentage: totalBudget > 0 ? (spent / totalBudget) * 100 : 0
+      allocated: allocatedBudget,
+      remaining: totalBudget - totalSpent,
+      unallocated: totalBudget - allocatedBudget,
+      percentage: totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0
     };
   };
 

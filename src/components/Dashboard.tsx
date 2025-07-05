@@ -143,17 +143,38 @@ export const Dashboard = ({ onBack }: DashboardProps) => {
             <Target className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
-              {displayAmount(remainingBudget)}
-            </div>
-            <div className="mt-2">
-              <Progress 
-                value={Math.min(budgetProgress.percentage, 100)} 
-                className="h-2"
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                {budgetProgress.percentage.toFixed(1)}% of budget used
-              </p>
+            <div className="space-y-3">
+              <div>
+                <div className="text-2xl font-bold text-foreground">
+                  {displayAmount(budgetProgress.budget)}
+                </div>
+                <p className="text-xs text-muted-foreground">Total Budget</p>
+              </div>
+              
+              {budgetProgress.allocated !== undefined && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Allocated:</span>
+                    <span className="text-foreground">{displayAmount(budgetProgress.allocated)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Remaining:</span>
+                    <span className={`font-medium ${remainingBudget >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {displayAmount(remainingBudget)}
+                    </span>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-2">
+                <Progress 
+                  value={Math.min(budgetProgress.percentage, 100)} 
+                  className="h-2"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  {budgetProgress.percentage.toFixed(1)}% of budget used
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

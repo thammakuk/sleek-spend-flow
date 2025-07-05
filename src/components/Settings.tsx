@@ -22,6 +22,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { SMSIntegration } from "@/components/SMSIntegration";
 
 export const Settings = () => {
   const { theme, setTheme } = useTheme();
@@ -251,7 +252,10 @@ export const Settings = () => {
         </CardContent>
       </Card>
 
-      {/* Logout */}
+        <div>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Automation</h3>
+          <SMSIntegration />
+        </div>
       <Card className="glass-card border-destructive/20">
         <CardContent className="pt-6">
           <Button 

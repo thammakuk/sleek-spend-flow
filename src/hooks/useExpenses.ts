@@ -160,8 +160,22 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Immediately refresh all data
-    await loadData();
+    // Add the new expense to local state immediately for instant UI update
+    const newExpense: Expense = {
+      id: data.id,
+      amount: parseFloat(expense.amount.toString()),
+      description: expense.description,
+      categoryId: expense.categoryId,
+      date: expense.date,
+      paymentMethod: expense.paymentMethod,
+      recurring: expense.recurring,
+      receiptUrl: expense.receiptUrl
+    };
+    
+    setExpenses(prev => [newExpense, ...prev]);
+    
+    // Also refresh all data to ensure consistency
+    setTimeout(() => loadData(), 100);
   };
 
   const updateExpense = async (id: string, updates: Partial<Expense>) => {

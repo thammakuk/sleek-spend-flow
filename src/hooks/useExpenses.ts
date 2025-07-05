@@ -173,9 +173,6 @@ export const useExpenses = () => {
     };
     
     setExpenses(prev => [newExpense, ...prev]);
-    
-    // Also refresh all data to ensure consistency
-    setTimeout(() => loadData(), 100);
   };
 
   const updateExpense = async (id: string, updates: Partial<Expense>) => {
@@ -202,8 +199,10 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Immediately refresh all data
-    await loadData();
+    // Update local state immediately
+    setExpenses(prev => prev.map(expense => 
+      expense.id === id ? { ...expense, ...updates } : expense
+    ));
   };
 
   const deleteExpense = async (id: string) => {
@@ -217,8 +216,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Immediately refresh all data
-    await loadData();
+    // Update local state immediately
+    setExpenses(prev => prev.filter(expense => expense.id !== id));
   };
 
   const addCategory = async (category: Omit<Category, 'id'>) => {
@@ -241,8 +240,16 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Immediately refresh all data
-    await loadData();
+    // Add the new category to local state immediately
+    const newCategory: Category = {
+      id: data.id,
+      name: category.name,
+      icon: category.icon,
+      color: category.color,
+      isCustom: true
+    };
+    
+    setCategories(prev => [...prev, newCategory]);
   };
 
   const updateCategory = async (id: string, updates: Partial<Category>) => {
@@ -260,8 +267,10 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Immediately refresh all data
-    await loadData();
+    // Update local state immediately
+    setCategories(prev => prev.map(category => 
+      category.id === id ? { ...category, ...updates } : category
+    ));
   };
 
   const deleteCategory = async (id: string) => {
@@ -281,8 +290,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Immediately refresh all data
-    await loadData();
+    // Update local state immediately
+    setCategories(prev => prev.filter(category => category.id !== id));
   };
 
   const addBudget = async (budget: Omit<Budget, 'id'>) => {
@@ -304,8 +313,15 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Immediately refresh all data
-    await loadData();
+    // Add the new budget to local state immediately
+    const newBudget: Budget = {
+      id: data.id,
+      categoryId: budget.categoryId,
+      limit: parseFloat(budget.limit.toString()),
+      period: budget.period
+    };
+    
+    setBudgets(prev => [...prev, newBudget]);
   };
 
   const updateBudget = async (id: string, updates: Partial<Budget>) => {
@@ -325,8 +341,10 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Immediately refresh all data
-    await loadData();
+    // Update local state immediately
+    setBudgets(prev => prev.map(budget => 
+      budget.id === id ? { ...budget, ...updates } : budget
+    ));
   };
 
   const deleteBudget = async (id: string) => {
@@ -340,8 +358,8 @@ export const useExpenses = () => {
       throw error;
     }
 
-    // Immediately refresh all data
-    await loadData();
+    // Update local state immediately
+    setBudgets(prev => prev.filter(budget => budget.id !== id));
   };
 
   const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);

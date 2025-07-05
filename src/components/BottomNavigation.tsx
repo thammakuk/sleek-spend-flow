@@ -1,5 +1,5 @@
 
-import { Home, History, TrendingUp, Settings } from "lucide-react";
+import { Home, History, TrendingUp, Settings, Target } from "lucide-react";
 import { TabType } from "@/pages/Index";
 
 interface BottomNavigationProps {
@@ -12,6 +12,7 @@ export const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationPro
     { id: 'dashboard' as TabType, label: 'Dashboard', icon: Home },
     { id: 'history' as TabType, label: 'History', icon: History },
     { id: 'insights' as TabType, label: 'Insights', icon: TrendingUp },
+    { id: 'budgets' as TabType, label: 'Budgets', icon: Target },
     { id: 'settings' as TabType, label: 'Settings', icon: Settings },
   ];
 
